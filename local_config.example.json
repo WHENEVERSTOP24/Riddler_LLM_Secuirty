@@ -1,0 +1,7 @@
+{
+  "model": ["ollama/qwen2.5-coder:3b"],
+  "attack_modes": ["hst"],
+  "classifier": ["har"],
+  "extra": ["taxonomy_model=ollama/qwen2.5-coder:3b"],
+  "max_workers": 1
+}
