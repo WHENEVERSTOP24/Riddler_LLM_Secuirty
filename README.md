@@ -1,212 +1,373 @@
-<p align="center">
-   <h1 align="center">FuzzyAI Fuzzer</h1>
-   <p align="center">
-      <img src="/src/fuzzyai/resources/logo.png" alt="Project Logo" width="200" style="vertical-align:middle; margin-right:10px;" /><br/>
-      The FuzzyAI Fuzzer is a powerful tool for automated LLM fuzzing. It is designed to help developers and security researchers identify jailbreaks and mitigate potential security vulnerabilities in their LLM APIs. 
-   </p>
-</p>
-<p align="center">
-   <a href="https://github.com/cyberark/fuzzyai/commits/main">
-      <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/cyberark/fuzzyai">
-   </a>
-   <a href="https://github.com/cyberark/fuzzyai">
-      <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/cyberark/FuzzyAI">
-   </a>
-   <a href="https://github.com/cyberark/fuzzyai/blob/master/LICENSE" >
-      <img alt="GitHub License" src="https://img.shields.io/github/license/cyberark/fuzzyai">
-   </a>
-   <a href="https://discord.gg/ewQjdx2V">
-      <img alt="Discord" src="https://img.shields.io/discord/1330486843938177157">
-   </a>
-   <br/><br/>
-   <img alt="fuzzgif" src="/src/fuzzyai/resources/fuzz.gif" />
-   <br/>
-</p>
+# 🃏 Riddler
 
-## Getting Started
-### Quick start #1 - Using an existing python project
-1. Install fuzzyai
-   ```bash
-   # Use either pip or any other package manager
-   pip install git+https://github.com/cyberark/FuzzyAI.git
-   ```
+### Local LLM Security Fuzzing & Adversarial Prompt Testing
 
-2. Run the fuzzer
-   ```bash
-   fuzzyai fuzz -h
-   ```
+Riddler is a locally-oriented LLM security testing framework designed to evaluate how language models respond to adversarial prompt transformations and jailbreak attempts.
 
-### Quick start #2 - or as a standalone project
-1. Clone the repository:
-   ```bash
-   git clone git@github.com:cyberark/FuzzyAI.git
-   cd FuzzyAI
-   ```
+It provides a controlled environment for experimenting with different attack strategies against locally hosted models through **Ollama**, allowing security researchers and students to study LLM robustness without requiring external model APIs.
 
-2. Install dependencies using [Poetry](https://python-poetry.org/):
-   ```bash
-   poetry run pip install -e .
-   ```
-
-3. Run the fuzzer:
-   ```bash
-   poetry run fuzzyai fuzz -h
-   ```
-
-4. Optional: Install [ollama](https://ollama.com/download/), and download a model for local usage:
-   ``` # Running the command will download and install (if not) llama3.1, which is about 4.7 GB in size and is an 8B parameters model. Llama3.1 hat can be substituted with any other open-source model that is supported by ollama.
-   ollama pull llama3.1
-   ollama show llama3.1 # verify model installation
-   ```
-   
-   Alternativly, you can use the Web UI
-
-## Web UI (Experimental)
-![FZAI](/src/fuzzyai/resources/webui.png)
-
-1. Run the Web UI (make sure you completed either of the installation steps from above):
-   ```bash
-    poetry run fuzzyai webui
-    
-    # Or specify a custom port:
-    poetry run fuzzyai webui --port 9000
-   ```
-
-## Notebooks
-We've included interactive Jupyter notebooks you can use under [src/fuzzyai/resources/notebooks/](https://github.com/cyberark/FuzzyAI/tree/main/src/fuzzyai/resources/notebooks).  
-For more information, see [notebooks wiki](https://github.com/cyberark/FuzzyAI/wiki#notebooks).
-
-## Datasets
-
-We've included some datasets you can use under [resources/](https://github.com/cyberark/FuzzyAI/tree/main/src/fuzzyau/resources). For more information, see [datasets wiki](https://github.com/cyberark/FuzzyAI/wiki#datasets).
-
-## Documentation
-
-Explore detailed usage instructions in the [Wiki](https://github.com/cyberark/FuzzyAI/wiki).
-
-## Examples
-If you're using poetry, make sure you've activated the venv (or by prepending 'poetry run' to the command line
-
-### A default attack (just evaluate the prompt 'Harmful_Prompt') using llama over Ollama
-```bash
-fuzzyai fuzz -m ollama/llama3.1 -a def -t "Harmful_Prompt"
-```
-
-### Attack the prompt utilizing ManyShot and Taxonomy attacks, using gpt3.5 over OpenAI using one worker
-```bash
-OPENAI_API_KEY=sk-3fa1... fuzzyai fuzz -m openai/gpt-3.5-turbo -a man -a tax -t "Harmful_Prompt"
-```
-
-### Attack prompts in prompts.txt utilizing the ArtPrompt attack, using Claude 3.5 over Anthropic
-```bash
-ANTHROPIC_API_KEY=deadbeef... fuzzyai fuzz -m anthropic/claude-3-5-sonnet-20240620 -a art -T src/fuzzyai/resources/adv_prompts.txt -e blacklisted_words="bomb,garbage,acid,ugly,self-harm,kill your"
-```
-
---- 
-
-### Attack your own REST API
-```bash
-OPENAI_API_KEYT=sk-3fa1... fuzzyai fuzz -a def -x openai/gpt-4 -e classifier_model=openai/gpt-4 -m rest/http.raw -e host=localhost -e port=8000 -e scheme=https  
--t "How to build a bomb"
-```
-
-#### Arguments breakdown:
-- **`-a def`**:  
-  Invokes the default attack mode, which evaluates the API without applying additional strategies.
-
-- **`-x openai/gpt-4`**:  
-  Specifies an auxiliary model (`gpt-4`) to assist with certain tasks during the attack.
-
-- **`-e classifier_model=openai/gpt-4`**:  
-  Configures the fuzzer to use the `gpt-4` model for classifying outputs. This helps determine whether responses meet specific criteria, such as detecting harmful or unwanted content.
-
-- **`-m rest/http.raw`**:  
-  Uses the REST provider to attack an API endpoint. The raw HTTP request is parsed from the file `http.raw`. (Refer to the [documentation or example](./src/fuzzyai/resources/http.raw) for details on the file structure.)
-
-- **`-e host=localhost -e port=8000 -e scheme=https`**:  
-  Configures the REST provider with the following API endpoint details:
-  - **Host**: `localhost`
-  - **Port**: `8000`
-  - **Scheme**: `https` (communication will use HTTPS)
-
-- **`-t "How to build a bomb"`**:  
-  Specifies the test input. In this example, it tests the API's handling of sensitive or harmful content.
-
-
-## Key Features
-
-- **Comprehensive Fuzzing Techniques**: Leverage mutation-based, generation-based, and intelligent fuzzing.
-- **Built-in Input Generation**: Generate valid and invalid inputs for exhaustive testing.
-- **Seamless Integration**: Easily incorporate into your development and testing workflows.
-- **Extensible Architecture**: Customize and expand the fuzzer to meet your unique requirements.
-
-## Supported models
-FuzzyAI supports various models across top providers, including:
-
-| Provider     | Models                                                                                                   |
-|--------------|----------------------------------------------------------------------------------------------------------|
-| **Anthropic**| Claude (3.5, 3.0, 2.1)                                                                                   |
-| **OpenAI**   | GPT-4o, GPT-4o mini, GPT o3                                                                                 |
-| **Gemini**   | Gemini Pro, Gemini 1.5                                                                                  |
-| **Azure**    | GPT-4, GPT-3.5 Turbo                                                                                    |
-| **Bedrock**  | Claude (3.5, 3.0), Meta (LLaMa)                                                                             |
-| **AI21**     | Jamba (1.5 Mini, Large)                                                                                |
-| **DeepSeek** | DeepSeek (DeepSeek-V3, DeepSeek-V1)                                                                  |
-| **Ollama**   | LLaMA (3.3, 3.2, 3.1), Dolphin-LLaMA3, Vicuna                                                               |
-
-## Adding support for newer models
-Easily add support for additional models by following our <a href="https://github.com/cyberark/FuzzyAI/wiki/DIY#adding-support-for-new-models">DIY guide</a>.
-
-## Implemented Attacks
-See <a href="https://github.com/cyberark/FuzzyAI/wiki/Attacks">attacks wiki</a> for detailed information
-
-| Attack Type                                  | Title                                                                                                                                                                       | Reference                                                                       |
-|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| ArtPrompt                                    | ASCII Art-based jailbreak attacks against aligned LLMs                                                                                                                      | [arXiv:2402.11753](https://arxiv.org/pdf/2402.11753)                            |
-| Taxonomy-based paraphrasing                  | Persuasive language techniques like emotional appeal to jailbreak LLMs                                                                                | [arXiv:2401.06373](https://arxiv.org/pdf/2401.06373)                            |
-| PAIR (Prompt Automatic Iterative Refinement) | Automates adversarial prompt generation by iteratively refining prompts with two LLMs                       | [arXiv:2310.08419](https://arxiv.org/pdf/2310.08419)                            |
-| Many-shot jailbreaking                       | Embeds multiple fake dialogue examples to weaken model safety                            | [Anthropic Research](https://www.anthropic.com/research/many-shot-jailbreaking) |
-| ASCII Smuggling                              | ASCII Smuggling uses Unicode Tag characters to embed hidden instructions within text, which are invisible to users but can be processed by Large Language Models (LLMs), potentially leading to prompt injection attacks                                                                                | [Embracethered blog](https://embracethered.com/blog/posts/2024/hiding-and-finding-text-with-unicode-tags/) |
-| Genetic                                      | Utilizes a genetic algorithm to modify prompts for adversarial outcomes                      | [arXiv:2309.01446](https://arxiv.org/pdf/2309.01446)                            |
-| Hallucinations                               | Bypasses RLHF filters using model-generated                                                                                                                                 | [arXiv:2403.04769](https://arxiv.org/pdf/2403.04769.pdf)                        |
-| DAN (Do Anything Now)                        | Promotes the LLM to adopt an unrestricted persona that ignores standard content filters, allowing it to "Do Anything Now".                                                  | [GitHub Repo](https://github.com/0xk1h0/ChatGPT_DAN)                            |
-| WordGame                                     | Disguises harmful prompts as word puzzles                                                                                                                                   | [arXiv:2405.14023](https://arxiv.org/pdf/2405.14023)                            |
-| Crescendo                                    | Engaging the model in a series of escalating conversational turns,starting with innocuous queries and gradually steering the dialogue toward restricted or sensitive topics. | [arXiv:2404.01833](https://arxiv.org/pdf/2404.01833)                            |
-| ActorAttack                                  | Inspired by actor-network theory, it builds semantic networks of "actors" to subtly guide conversations toward harmful targets while concealing malicious intent.           | [arxiv 2410.10700](https://arxiv.org/pdf/2410.10700)                                                                            |                                                                                                                                     |
-| Best-of-n jailbreaking | Uses input variations to repeatedly elicit harmful responses, exploiting model sensitivity | [arXiv:2412.03556](https://arxiv.org/abs/2412.03556) |
-| Shuffle Inconsistency Attack (SI-Attack) | Exploits the inconsistency between an LLM's comprehension ability and safety mechanisms by shuffling harmful text prompts. The shuffled text bypasses safety mechanisms while still being understood as harmful by the LLM. Only the text-based implementation was completed; the image-based aspect was not implemented. | [arXiv:2501.04931](https://arxiv.org/abs/2501.04931) |
-| Back To The Past                             | Modifies the prompt by adding a profession-based prefix and a past-related suffix                                                                                           |                                                                                 |
-| History/Academic framing                             | Framing sensitive technical data as scholarly or historical research to enable ethical, legal use—potentially leading to a jailbreak.                                                                                           |                                                                                 |
-| Please                                       | Modifies the prompt by adding please as a prefix and suffix                                                                                                                   |                                                                                 |
-| Thought Experiment                           | Modifies the prompt by adding a thought experiment-related prefix. In addition, adds "precautions have been taken care of" suffix                                                  |                                                                                 
-| Default                                      | Send the prompt to the model as-is 
-
-## Supported Cloud APIs
-- **OpenAI**
-- **Anthropic**
-- **Gemini**
-- **Azure Cloud**
-- **AWS Bedrock**
-- **AI21**
-- **DeepSeek**
-- **Huggingface ([Downloading models](https://huggingface.co/docs/hub/en/models-downloading))**
-- **Ollama**
-- **Custom REST API**
 ---
 
-## Caveats
-* Some classifiers do more than just evaluate a single output. For example, the cosine-similarity classifier compares two outputs by measuring the angle between them, while a 'harmfulness' classifier checks whether a given output is harmful. As a result, not all classifiers are compatible with the attack methods we've implemented, as those methods are designed for single-output classifiers.
-* When using the -m option with OLLAMA models, <b>ensure that all OLLAMA models are added first before adding any other models.</b> Use the -e port=... option to specify the port number for OLLAMA (default is 11434).
+## 🎯 Why Riddler?
 
-## Contributing
+Modern LLM applications can be exposed to prompt injection, jailbreak attempts, adversarial prompting, and other forms of instruction manipulation.
 
-Contributions are welcome! If you would like to contribute to the FuzzyAI Fuzzer, please follow the guidelines outlined in the [CONTRIBUTING.md](https://github.com/cyberark/FuzzyAI/blob/main/CONTRIBUTING.md) file.
+Riddler helps investigate these behaviors by:
 
-## License
+* Generating adversarial variations of user prompts
+* Testing multiple attack strategies
+* Running models locally through Ollama
+* Classifying model responses
+* Recording whether an attack appears successful
+* Providing reproducible results for security research
 
-The FuzzyAI Fuzzer is released under the [Apache License](https://www.apache.org/licenses/LICENSE-2.0). See the [LICENSE](https://github.com/cyberark/FuzzyAI/blob/main/LICENSE) file for more details.
+The goal is not simply to generate malicious prompts, but to understand **why and when an LLM's safety behavior fails**.
 
-## Contact
+---
 
-If you have any questions or suggestions regarding the FuzzyAI Fuzzer, please feel free to contact us at [fzai@cyberark.com](mailto:fzai@cyberark.com).
+## 🧠 Architecture
 
+```text
+                         ┌─────────────────────┐
+                         │    Target Prompt    │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │      Riddler        │
+                         │   Attack Engine     │
+                         └──────────┬──────────┘
+                                    │
+                ┌───────────────────┼───────────────────┐
+                │                   │                   │
+                ▼                   ▼                   ▼
+          History Framing      Taxonomy           Genetic
+             (HST)              (TAX)              (GEN)
+                │                   │                   │
+                └───────────────────┼───────────────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │       Ollama        │
+                         │    Local LLM        │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │     Response        │
+                         │    Classifier       │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │  Jailbreak Result   │
+                         └─────────────────────┘
+```
+
+---
+
+# ⚔️ Attack Modes
+
+Riddler supports multiple adversarial prompting techniques.
+
+| Mode  | Name                 | Purpose                                                                  |
+| ----- | -------------------- | ------------------------------------------------------------------------ |
+| `hst` | History Framing      | Reframes a request using historical/contextual narratives                |
+| `tax` | Taxonomy Paraphraser | Transforms prompts using taxonomy-based paraphrasing                     |
+| `gen` | Genetic              | Iteratively mutates prompts to search for effective adversarial variants |
+
+These techniques allow the same underlying request to be evaluated from different adversarial perspectives.
+
+---
+
+# 🖥️ Local LLM Support
+
+Riddler has been configured to work with **Ollama**, allowing security testing against locally hosted models.
+
+Example models:
+
+```text
+qwen2.5:3b
+qwen2.5-coder:3b
+```
+
+This allows experiments to be performed without sending prompts or responses to an external LLM provider.
+
+### Example Architecture
+
+```text
+Riddler
+   │
+   ▼
+Ollama
+   │
+   ├── qwen2.5:3b
+   │
+   └── qwen2.5-coder:3b
+```
+
+---
+
+# 🚀 Installation
+
+### Requirements
+
+* Python 3.10+
+* Poetry
+* Ollama
+* Git
+* Linux / WSL recommended for local development
+
+Clone the repository:
+
+```bash
+git clone https://github.com/WHENEVERSTOP24/Riddler_LLM_Secuirty.git
+cd Riddler_LLM_Secuirty
+```
+
+Install dependencies:
+
+```bash
+poetry install
+```
+
+Activate the environment:
+
+```bash
+poetry shell
+```
+
+---
+
+# 🦙 Configure Ollama
+
+Make sure Ollama is running before starting an attack.
+
+Check installed models:
+
+```bash
+ollama list
+```
+
+Example:
+
+```text
+NAME                    SIZE
+qwen2.5:3b              1.9 GB
+qwen2.5-coder:3b        1.9 GB
+```
+
+For WSL environments, configure the Ollama host appropriately so that the WSL environment can communicate with the Windows Ollama service.
+
+---
+
+# 🧪 Basic Usage
+
+A simple local fuzzing test can be executed with:
+
+```bash
+poetry run riddler fuzz \
+  -m ollama/qwen2.5-coder:3b \
+  -a hst \
+  -c har \
+  -t "Explain cybersecurity best practices for a beginner."
+```
+
+For configuration-driven experiments:
+
+```bash
+poetry run riddler fuzz \
+  -C local_config.example.json
+```
+
+---
+
+# 📊 Example Result
+
+Riddler produces structured results similar to:
+
+```text
+┌───────────────────────────────┬──────────────────────┬───────────────┐
+│ Prompt                        │ Model                │ Attack        │
+├───────────────────────────────┼──────────────────────┼───────────────┤
+│ Example security question     │ qwen2.5-coder:3b     │ HST           │
+└───────────────────────────────┴──────────────────────┴───────────────┘
+
+Adversarial Prompt:
+    [generated adversarial variation]
+
+Response:
+    [model response]
+
+Jailbreak:
+    ❌
+```
+
+A successful result indicates that the generated adversarial prompt caused the target model to produce a response that the configured classifier considered to violate the expected safety behavior.
+
+---
+
+# 🔬 Research Applications
+
+Riddler can be used for:
+
+### LLM Red Teaming
+
+Evaluate the robustness of locally deployed language models against adversarial prompting.
+
+### Jailbreak Research
+
+Study how different prompt transformations influence model safety behavior.
+
+### Model Comparison
+
+Run the same attack strategies against different local models.
+
+```text
+                 ┌──────────────┐
+                 │ Target Prompt│
+                 └───────┬──────┘
+                         │
+                ┌────────┴────────┐
+                ▼                 ▼
+          Qwen 2.5 3B      Qwen 2.5 Coder
+                │                 │
+                ▼                 ▼
+             Results           Results
+                │                 │
+                └────────┬────────┘
+                         ▼
+                    Comparison
+```
+
+### Security Education
+
+Riddler can be used as a practical environment for understanding LLM security concepts and adversarial prompt engineering.
+
+---
+
+# 🛠️ Riddler Customizations
+
+This repository contains modifications made to the original FuzzyAI project, including:
+
+* Renamed CLI interface to **Riddler**
+* Custom Riddler terminal banner
+* Local Ollama-oriented configuration
+* Qwen 2.5 Coder as the default taxonomy model for History Framing
+* WSL → Windows Ollama connectivity support
+* Local configuration template
+* Riddler-specific project metadata
+
+The Python package structure remains compatible with the original project architecture.
+
+---
+
+# 🔐 Security & Responsible Use
+
+Riddler is intended for:
+
+* Authorized security testing
+* LLM robustness research
+* Security education
+* Controlled red-team experiments
+* Testing models that you own or have permission to evaluate
+
+Do not use Riddler to bypass safety controls on systems or services without authorization.
+
+---
+
+# 📁 Project Structure
+
+```text
+Riddler_LLM_Secuirty/
+│
+├── src/
+│   └── fuzzyai/
+│       ├── attacks/
+│       ├── classifiers/
+│       ├── handlers/
+│       ├── llm/
+│       │   └── providers/
+│       │       └── ollama/
+│       ├── cli.py
+│       └── ...
+│
+├── tests/
+├── resources/
+├── local_config.example.json
+├── pyproject.toml
+├── README.md
+└── .gitignore
+```
+
+---
+
+# 🧰 Technology Stack
+
+| Technology | Purpose                             |
+| ---------- | ----------------------------------- |
+| Python     | Core framework                      |
+| Poetry     | Dependency management               |
+| Ollama     | Local LLM inference                 |
+| Qwen 2.5   | Target language model               |
+| MongoDB    | Experiment/result storage           |
+| AsyncIO    | Concurrent attack execution         |
+| WSL        | Local Linux development environment |
+
+---
+
+# 📌 Roadmap
+
+* [x] Local Ollama integration
+* [x] Qwen 2.5 support
+* [x] History Framing attack
+* [x] Taxonomy attack
+* [x] Genetic attack
+* [x] Local classification
+* [x] Riddler CLI branding
+* [ ] Improved experiment dashboard
+* [ ] Automated model comparison
+* [ ] Attack success analytics
+* [ ] Research-oriented reporting
+* [ ] Additional local classifiers
+* [ ] Expanded Ollama model support
+
+---
+
+# 📜 Attribution
+
+Riddler is a customized/adapted version of **CyberArk FuzzyAI**.
+
+Original project:
+
+https://github.com/cyberark/FuzzyAI
+
+The original project's licensing and attribution requirements remain applicable to the portions derived from the upstream project.
+
+Riddler-specific modifications and research work are maintained in this repository.
+
+---
+
+# 👨‍💻 Author
+
+**Anubhav Rajput**
+
+Computer Science — Cybersecurity
+
+Focus areas:
+
+* LLM Security
+* AI Red Teaming
+* Security Automation
+* SOC Engineering
+* Offensive Security
+
+GitHub:
+
+https://github.com/WHENEVERSTOP24
+
+---
+
+## ⭐ Riddler
+
+> **Break the prompt. Understand the model. Secure the system.**
