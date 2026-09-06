@@ -334,17 +334,6 @@ Riddler_LLM_Secuirty/
 
 ---
 
-# 📜 Attribution
-
-Riddler is a customized/adapted version of **CyberArk FuzzyAI**.
-
-Original project:
-
-https://github.com/cyberark/FuzzyAI
-
-The original project's licensing and attribution requirements remain applicable to the portions derived from the upstream project.
-
-Riddler-specific modifications and research work are maintained in this repository.
 
 ---
 
