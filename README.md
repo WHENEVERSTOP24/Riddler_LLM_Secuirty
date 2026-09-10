@@ -248,10 +248,6 @@ Riddler can be used as a practical environment for understanding LLM security co
 
 # 🛠️ Riddler Customizations
 
-This repository contains modifications made to the original FuzzyAI project, including:
-
-* Renamed CLI interface to **Riddler**
-* Custom Riddler terminal banner
 * Local Ollama-oriented configuration
 * Qwen 2.5 Coder as the default taxonomy model for History Framing
 * WSL → Windows Ollama connectivity support
